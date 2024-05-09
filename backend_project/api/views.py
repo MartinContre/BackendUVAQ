@@ -9,7 +9,7 @@ from rest_framework.views import APIView
 from backend_project import settings
 from api.models import Post
 
-from .serializers import DogBreedSerializer, DogVoteSerializer, UserSerializer, PostSerializer, CommentSerializer
+from .serializers import DogBreedSerializer, DogImageSerializer, DogVoteSerializer, UserSerializer, PostSerializer, CommentSerializer
 
 DOGS_API_KEY = settings.DOGS_API_KEY
 
@@ -29,33 +29,24 @@ class DogBreedsList(ListAPIView):
 class DogImages(APIView):
     def get(self, request, breed_id):
         try:
-            endpoint = 'https://api.thedogapi.com/v1/images/search'
+            url = 'https://api.thecatapi.com/v1/images/search'
+            headers = {'x-api-key': DOGS_API_KEY}
             params = {
-                'api_key': DOGS_API_KEY,
-                'breed_ids': breed_id
+                'breed_ids': breed_id,
+                'include_breeds': True
             }
-            response = requests.get(endpoint, params=params)
+            response = requests.get(url, params=params, headers=headers)
             response.raise_for_status()
             dog_images = response.json()
-            return Response(dog_images, status=status.HTTP_200_OK)
+            print(dog_images)
+            serialized_images = DogImageSerializer(data=dog_images, many=True)
+            serialized_images.is_valid(raise_exception=True)
+            serialized_images.save()
+            return Response(serialized_images.data, status=status.HTTP_200_OK)
         except requests.RequestException as e:
             return Response({"error": f"No se pudo obtener las imágenes de perros: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
         except Exception as e:
             return Response({"error": f"Error inesperado: {e}"}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
-    
-class PostDogVote(CreateAPIView):
-    serializer_class = DogVoteSerializer
-
-    def create(self, request, *args, **kwargs):
-        serializer = self.get_serializer(data=request.data)
-        if serializer.is_valid():
-            url = 'https://api.thedogapi.com/v1/votes'
-            headers = {'x-api-key': DOGS_API_KEY}
-            response = requests.post(url, json=serializer.validated_data, headers=headers)
-        if response.status_code == status.HTTP_201_CREATED:
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-
 
 class UsersList(ListAPIView):
     serializer_class = UserSerializer
@@ -108,3 +99,15 @@ class CreateComment(CreateAPIView):
                 return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
     
+class CreateDogVote(CreateAPIView):
+    serializer_class = DogVoteSerializer
+
+    def create(self, request):
+        serializer = self.get_serializer(data=request.data)
+        if serializer.is_valid():
+            url = 'https://api.thedogapi.com/v1/votes'
+            headers = {'x-api-key': DOGS_API_KEY}
+            response = requests.post(url, json=serializer.validated_data, headers=headers)
+            if response.status_code == status.HTTP_201_CREATED:
+                return Response(serializer.data, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)

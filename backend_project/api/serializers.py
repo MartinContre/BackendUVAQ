@@ -25,7 +25,7 @@ class DogBreedSerializer(serializers.ModelSerializer):
 class DogImageSerializer(serializers.ModelSerializer):
     class Meta:
         model = DogImage
-        fields = '__all__'
+        fields = ['id', 'url', 'width', 'height']
 
 class DogVoteSerializer(serializers.ModelSerializer):
     class Meta:

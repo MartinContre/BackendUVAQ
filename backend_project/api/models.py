@@ -30,11 +30,13 @@ class DogBreed(models.Model):
         return self.name
 
 class DogImage(models.Model):
-    breed = models.ForeignKey(DogBreed, on_delete=models.CASCADE)
-    image_url = models.URLField()
+    id = models.CharField(primary_key=True, max_length=255)
+    url = models.URLField()
+    width = models.IntegerField(default=0)
+    height = models.IntegerField(default=0)
 
     def __str__(self):
-        return f"{self.breed.name} - {self.id}"
+        return self.id
 
 class DogVote(models.Model):
     image_id = models.CharField(max_length=100)

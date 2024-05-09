@@ -6,7 +6,7 @@ from .views import (
     CreatePost,
     DogBreedsList,
     DogImages,
-    PostDogVote,
+    CreateDogVote,
     UserPost,
     UsersList,
 )
@@ -15,7 +15,7 @@ from .views import (
 urlpatterns = [
     path('dog-breeds/', DogBreedsList.as_view(), name='dog-breeds-list'),
     path('dogs/<str:breed_id>/', DogImages.as_view(), name='dog_images'),
-    path('dogs/votes/', PostDogVote.as_view(), name='dog_votes'),
+    path('dogs/votes/', CreateDogVote.as_view(), name='create_dog_vote'),
     path('users/', UsersList.as_view(), name='users-list'),
     path('posts/<int:user_id>/', UserPost.as_view(), name='user-posts'),
     path('posts/create/', CreatePost.as_view(), name='create-post'),
